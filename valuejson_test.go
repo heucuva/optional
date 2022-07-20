@@ -11,14 +11,14 @@ import (
 	"github.com/heucuva/optional"
 )
 
-type marshalTest[T any] struct {
+type marshalTestJSON[T any] struct {
 	test     string
 	value    optional.Value[T]
 	expected string
 	run      func(*testing.T)
 }
 
-func (ti marshalTest[T]) runSupported(t *testing.T) {
+func (ti marshalTestJSON[T]) runSupported(t *testing.T) {
 	t.Helper()
 	blob, err := json.Marshal(ti.value)
 	if err != nil {
@@ -29,7 +29,7 @@ func (ti marshalTest[T]) runSupported(t *testing.T) {
 	}
 }
 
-func (ti marshalTest[T]) runUnsupportedValue(t *testing.T) {
+func (ti marshalTestJSON[T]) runUnsupportedValue(t *testing.T) {
 	t.Helper()
 	_, err := json.Marshal(ti.value)
 	if err == nil {
@@ -41,7 +41,7 @@ func (ti marshalTest[T]) runUnsupportedValue(t *testing.T) {
 	}
 }
 
-func (ti marshalTest[T]) runUnsupportedType(t *testing.T) {
+func (ti marshalTestJSON[T]) runUnsupportedType(t *testing.T) {
 	t.Helper()
 	_, err := json.Marshal(ti.value)
 	if err == nil {
@@ -53,8 +53,8 @@ func (ti marshalTest[T]) runUnsupportedType(t *testing.T) {
 	}
 }
 
-func marshalSupported[T any](name string, value T, expected string) marshalTest[T] {
-	ti := marshalTest[T]{
+func marshalSupportedJSON[T any](name string, value T, expected string) marshalTestJSON[T] {
+	ti := marshalTestJSON[T]{
 		test:     name,
 		value:    optional.NewValue(value),
 		expected: expected,
@@ -63,8 +63,8 @@ func marshalSupported[T any](name string, value T, expected string) marshalTest[
 	return ti
 }
 
-func marshalUnsupportedValue[T any](name string, value T) marshalTest[T] {
-	ti := marshalTest[T]{
+func marshalUnsupportedJSONValue[T any](name string, value T) marshalTestJSON[T] {
+	ti := marshalTestJSON[T]{
 		test:  name,
 		value: optional.NewValue(value),
 	}
@@ -72,8 +72,8 @@ func marshalUnsupportedValue[T any](name string, value T) marshalTest[T] {
 	return ti
 }
 
-func marshalUnsupportedType[T any](name string, value T) marshalTest[T] {
-	ti := marshalTest[T]{
+func marshalUnsupportedJSONType[T any](name string, value T) marshalTestJSON[T] {
+	ti := marshalTestJSON[T]{
 		test:  name,
 		value: optional.NewValue(value),
 	}
@@ -81,10 +81,10 @@ func marshalUnsupportedType[T any](name string, value T) marshalTest[T] {
 	return ti
 }
 
-func testMarshalJSON[T any](t *testing.T, tests ...marshalTest[T]) {
+func testMarshalJSON[T any](t *testing.T, tests ...marshalTestJSON[T]) {
 	t.Helper()
 
-	t.Run("Unset", marshalTest[T]{expected: "null"}.runSupported)
+	t.Run("Unset", marshalTestJSON[T]{expected: "null"}.runSupported)
 
 	for _, ti := range tests {
 		t.Run(ti.test, ti.run)
@@ -95,104 +95,104 @@ func TestMarshalJSON(t *testing.T) {
 	// Boolean
 	t.Run("Bool", func(t *testing.T) {
 		testMarshalJSON(t,
-			marshalSupported("True", true, `true`),
-			marshalSupported("False", false, `false`),
+			marshalSupportedJSON("True", true, `true`),
+			marshalSupportedJSON("False", false, `false`),
 		)
 	})
 
 	// Signed Integer
 	t.Run("Int", func(t *testing.T) {
 		testMarshalJSON(t,
-			marshalSupported("Zero", 0, `0`),
-			marshalSupported("Positive", math.MaxInt, `9223372036854775807`),
-			marshalSupported("Negative", math.MinInt, `-9223372036854775808`),
+			marshalSupportedJSON("Zero", 0, `0`),
+			marshalSupportedJSON("Positive", math.MaxInt, `9223372036854775807`),
+			marshalSupportedJSON("Negative", math.MinInt, `-9223372036854775808`),
 		)
 	})
 	t.Run("Int8", func(t *testing.T) {
 		testMarshalJSON(t,
-			marshalSupported[int8]("Zero", 0, `0`),
-			marshalSupported[int8]("Positive", math.MaxInt8, `127`),
-			marshalSupported[int8]("Negative", math.MinInt8, `-128`),
+			marshalSupportedJSON[int8]("Zero", 0, `0`),
+			marshalSupportedJSON[int8]("Positive", math.MaxInt8, `127`),
+			marshalSupportedJSON[int8]("Negative", math.MinInt8, `-128`),
 		)
 	})
 	t.Run("Int16", func(t *testing.T) {
 		testMarshalJSON(t,
-			marshalSupported[int16]("Zero", 0, `0`),
-			marshalSupported[int16]("Positive", math.MaxInt16, `32767`),
-			marshalSupported[int16]("Negative", math.MinInt16, `-32768`),
+			marshalSupportedJSON[int16]("Zero", 0, `0`),
+			marshalSupportedJSON[int16]("Positive", math.MaxInt16, `32767`),
+			marshalSupportedJSON[int16]("Negative", math.MinInt16, `-32768`),
 		)
 	})
 	t.Run("Int32", func(t *testing.T) {
 		testMarshalJSON(t,
-			marshalSupported[int32]("Zero", 0, `0`),
-			marshalSupported[int32]("Positive", math.MaxInt32, `2147483647`),
-			marshalSupported[int32]("Negative", math.MinInt32, `-2147483648`),
+			marshalSupportedJSON[int32]("Zero", 0, `0`),
+			marshalSupportedJSON[int32]("Positive", math.MaxInt32, `2147483647`),
+			marshalSupportedJSON[int32]("Negative", math.MinInt32, `-2147483648`),
 		)
 	})
 
 	// Unsigned integer
 	t.Run("Uint", func(t *testing.T) {
 		testMarshalJSON(t,
-			marshalSupported[uint]("Zero", 0, `0`),
-			marshalSupported[uint]("Max", math.MaxUint, `18446744073709551615`),
+			marshalSupportedJSON[uint]("Zero", 0, `0`),
+			marshalSupportedJSON[uint]("Max", math.MaxUint, `18446744073709551615`),
 		)
 	})
 	t.Run("Uint8", func(t *testing.T) {
 		testMarshalJSON(t,
-			marshalSupported[uint8]("Zero", 0, `0`),
-			marshalSupported[uint8]("Max", math.MaxUint8, `255`),
+			marshalSupportedJSON[uint8]("Zero", 0, `0`),
+			marshalSupportedJSON[uint8]("Max", math.MaxUint8, `255`),
 		)
 	})
 	t.Run("Uint16", func(t *testing.T) {
 		testMarshalJSON(t,
-			marshalSupported[uint16]("Zero", 0, `0`),
-			marshalSupported[uint16]("Max", math.MaxUint16, `65535`),
+			marshalSupportedJSON[uint16]("Zero", 0, `0`),
+			marshalSupportedJSON[uint16]("Max", math.MaxUint16, `65535`),
 		)
 	})
 	t.Run("Uint32", func(t *testing.T) {
 		testMarshalJSON(t,
-			marshalSupported[uint32]("Zero", 0, `0`),
-			marshalSupported[uint32]("Max", math.MaxUint32, `4294967295`),
+			marshalSupportedJSON[uint32]("Zero", 0, `0`),
+			marshalSupportedJSON[uint32]("Max", math.MaxUint32, `4294967295`),
 		)
 	})
 
 	// Floating point
 	t.Run("Float32", func(t *testing.T) {
 		testMarshalJSON(t,
-			marshalSupported[float32]("ZeroPositive", 0.0, `0`),
-			marshalSupported("ZeroNegative", math.Float32frombits(0x80000000), `-0`),
-			marshalSupported[float32]("Positive", math.MaxFloat32, `3.4028235e+38`),
-			marshalSupported[float32]("Negative", -math.MaxFloat32, `-3.4028235e+38`),
-			marshalSupported[float32]("Smallest", math.SmallestNonzeroFloat32, `1e-45`),
-			marshalUnsupportedValue("QNaN", math.Float32frombits(0x7FFFFFFF)),
-			marshalUnsupportedValue("SNaN", math.Float32frombits(0x7FbFFFFF)),
-			marshalUnsupportedValue("PositiveInf", math.Float32frombits(0x7F800000)),
-			marshalUnsupportedValue("NegativeInf", math.Float32frombits(0xFF800000)),
+			marshalSupportedJSON[float32]("ZeroPositive", 0.0, `0`),
+			marshalSupportedJSON("ZeroNegative", math.Float32frombits(0x80000000), `-0`),
+			marshalSupportedJSON[float32]("Positive", math.MaxFloat32, `3.4028235e+38`),
+			marshalSupportedJSON[float32]("Negative", -math.MaxFloat32, `-3.4028235e+38`),
+			marshalSupportedJSON[float32]("Smallest", math.SmallestNonzeroFloat32, `1e-45`),
+			marshalUnsupportedJSONValue("QNaN", math.Float32frombits(0x7FFFFFFF)),
+			marshalUnsupportedJSONValue("SNaN", math.Float32frombits(0x7FbFFFFF)),
+			marshalUnsupportedJSONValue("PositiveInf", math.Float32frombits(0x7F800000)),
+			marshalUnsupportedJSONValue("NegativeInf", math.Float32frombits(0xFF800000)),
 		)
 	})
 	t.Run("Float64", func(t *testing.T) {
 		testMarshalJSON(t,
-			marshalSupported("ZeroPositive", 0.0, `0`),
-			marshalSupported("ZeroNegative", math.Float64frombits(0x8000000000000000), `-0`),
-			marshalSupported("Positive", math.MaxFloat64, `1.7976931348623157e+308`),
-			marshalSupported("Negative", -math.MaxFloat64, `-1.7976931348623157e+308`),
-			marshalSupported("Smallest", math.SmallestNonzeroFloat64, `5e-324`),
-			marshalUnsupportedValue("QNaN", math.Float64frombits(0x7FFFFFFFFFFFFFFF)),
-			marshalUnsupportedValue("SNaN", math.Float64frombits(0x7FF7FFFFFFFFFFFF)),
-			marshalUnsupportedValue("PositiveInf", math.Float64frombits(0x7FF0000000000000)),
-			marshalUnsupportedValue("NegativeInf", math.Float64frombits(0xFFF0000000000000)),
+			marshalSupportedJSON("ZeroPositive", 0.0, `0`),
+			marshalSupportedJSON("ZeroNegative", math.Float64frombits(0x8000000000000000), `-0`),
+			marshalSupportedJSON("Positive", math.MaxFloat64, `1.7976931348623157e+308`),
+			marshalSupportedJSON("Negative", -math.MaxFloat64, `-1.7976931348623157e+308`),
+			marshalSupportedJSON("Smallest", math.SmallestNonzeroFloat64, `5e-324`),
+			marshalUnsupportedJSONValue("QNaN", math.Float64frombits(0x7FFFFFFFFFFFFFFF)),
+			marshalUnsupportedJSONValue("SNaN", math.Float64frombits(0x7FF7FFFFFFFFFFFF)),
+			marshalUnsupportedJSONValue("PositiveInf", math.Float64frombits(0x7FF0000000000000)),
+			marshalUnsupportedJSONValue("NegativeInf", math.Float64frombits(0xFFF0000000000000)),
 		)
 	})
 
 	// Complex
 	t.Run("Complex64", func(t *testing.T) {
 		testMarshalJSON(t,
-			marshalUnsupportedType("BothZeroPositive", complex(float32(0.0), float32(0.0))),
+			marshalUnsupportedJSONType("BothZeroPositive", complex(float32(0.0), float32(0.0))),
 		)
 	})
 	t.Run("Complex128", func(t *testing.T) {
 		testMarshalJSON(t,
-			marshalUnsupportedType("BothZeroPositive", complex(float64(0.0), float64(0.0))),
+			marshalUnsupportedJSONType("BothZeroPositive", complex(float64(0.0), float64(0.0))),
 		)
 	})
 
@@ -200,34 +200,34 @@ func TestMarshalJSON(t *testing.T) {
 	// NOTE: rune is effectively uint16
 	t.Run("Rune", func(t *testing.T) {
 		testMarshalJSON(t,
-			marshalSupported("Alpha", 'A', `65`),
-			marshalSupported("Unicode", '\u2E9F', `11935`),
+			marshalSupportedJSON("Alpha", 'A', `65`),
+			marshalSupportedJSON("Unicode", '\u2E9F', `11935`),
 		)
 	})
 
 	// String
 	t.Run("String", func(t *testing.T) {
 		testMarshalJSON(t,
-			marshalSupported("Empty", "", `""`),
-			marshalSupported("NonEmpty", "The quick brown fox", `"The quick brown fox"`),
+			marshalSupportedJSON("Empty", "", `""`),
+			marshalSupportedJSON("NonEmpty", "The quick brown fox", `"The quick brown fox"`),
 		)
 	})
 
 	// Slice
 	t.Run("Slice", func(t *testing.T) {
 		testMarshalJSON(t,
-			marshalSupported[[]string]("Null", nil, `null`),
-			marshalSupported("Empty", []string{}, `[]`),
-			marshalSupported("NonEmpty", []string{"The quick brown fox"}, `["The quick brown fox"]`),
+			marshalSupportedJSON[[]string]("Null", nil, `null`),
+			marshalSupportedJSON("Empty", []string{}, `[]`),
+			marshalSupportedJSON("NonEmpty", []string{"The quick brown fox"}, `["The quick brown fox"]`),
 		)
 	})
 
 	// Map
 	t.Run("Map", func(t *testing.T) {
 		testMarshalJSON(t,
-			marshalSupported[map[string]string]("Null", nil, `null`),
-			marshalSupported("Empty", map[string]string{}, `{}`),
-			marshalSupported("NonEmpty", map[string]string{"entry": "The quick brown fox"}, `{"entry":"The quick brown fox"}`),
+			marshalSupportedJSON[map[string]string]("Null", nil, `null`),
+			marshalSupportedJSON("Empty", map[string]string{}, `{}`),
+			marshalSupportedJSON("NonEmpty", map[string]string{"entry": "The quick brown fox"}, `{"entry":"The quick brown fox"}`),
 		)
 	})
 
@@ -240,7 +240,7 @@ func TestMarshalJSON(t *testing.T) {
 			var notMarshalled testStructNotMarshalled
 			_ = notMarshalled.value
 			testMarshalJSON(t,
-				marshalSupported("Set", notMarshalled, `{}`),
+				marshalSupportedJSON("Set", notMarshalled, `{}`),
 			)
 		})
 		t.Run("Hidden", func(t *testing.T) {
@@ -249,7 +249,7 @@ func TestMarshalJSON(t *testing.T) {
 			}
 			var hidden testStructHidden
 			testMarshalJSON(t,
-				marshalSupported("Set", hidden, `{}`),
+				marshalSupportedJSON("Set", hidden, `{}`),
 			)
 		})
 		t.Run("OneField", func(t *testing.T) {
@@ -258,7 +258,7 @@ func TestMarshalJSON(t *testing.T) {
 			}
 			var oneField testStructOneField
 			testMarshalJSON(t,
-				marshalSupported("Set", oneField, `{"value":0}`),
+				marshalSupportedJSON("Set", oneField, `{"value":0}`),
 			)
 		})
 		t.Run("TwoFields", func(t *testing.T) {
@@ -268,7 +268,7 @@ func TestMarshalJSON(t *testing.T) {
 			}
 			var twoFields testStructTwoFields
 			testMarshalJSON(t,
-				marshalSupported("Set", twoFields, `{"a":0,"b":false}`),
+				marshalSupportedJSON("Set", twoFields, `{"a":0,"b":false}`),
 			)
 		})
 		t.Run("EmbeddedOptional", func(t *testing.T) {
@@ -280,21 +280,21 @@ func TestMarshalJSON(t *testing.T) {
 				Value: optional.NewValue(5),
 			}
 			testMarshalJSON(t,
-				marshalSupported("SetValueUnset", embeddedUnset, `{"value":null}`),
-				marshalSupported("SetValueSet", embeddedSet, `{"value":5}`),
+				marshalSupportedJSON("SetValueUnset", embeddedUnset, `{"value":null}`),
+				marshalSupportedJSON("SetValueSet", embeddedSet, `{"value":5}`),
 			)
 		})
 	})
 }
 
-type unmarshalTest[T any] struct {
+type unmarshalTestJSON[T any] struct {
 	test     string
 	data     string
 	comparer func(observed optional.Value[T]) (optional.Value[T], bool)
 	run      func(*testing.T)
 }
 
-func (ti unmarshalTest[T]) runSupported(t *testing.T) {
+func (ti unmarshalTestJSON[T]) runSupported(t *testing.T) {
 	t.Helper()
 	var observed optional.Value[T]
 	err := json.Unmarshal([]byte(ti.data), &observed)
@@ -306,7 +306,7 @@ func (ti unmarshalTest[T]) runSupported(t *testing.T) {
 	}
 }
 
-func (ti unmarshalTest[T]) runUnsupportedValue(t *testing.T) {
+func (ti unmarshalTestJSON[T]) runUnsupportedValue(t *testing.T) {
 	t.Helper()
 	var observed optional.Value[T]
 	err := json.Unmarshal([]byte(ti.data), &observed)
@@ -319,7 +319,7 @@ func (ti unmarshalTest[T]) runUnsupportedValue(t *testing.T) {
 	}
 }
 
-func (ti unmarshalTest[T]) runUnsupportedType(t *testing.T) {
+func (ti unmarshalTestJSON[T]) runUnsupportedType(t *testing.T) {
 	t.Helper()
 	var observed optional.Value[T]
 	err := json.Unmarshal([]byte(ti.data), &observed)
@@ -332,8 +332,8 @@ func (ti unmarshalTest[T]) runUnsupportedType(t *testing.T) {
 	}
 }
 
-func unmarshalSupported[T any](name string, data string, value T) unmarshalTest[T] {
-	ti := unmarshalTest[T]{
+func unmarshalSupported[T any](name string, data string, value T) unmarshalTestJSON[T] {
+	ti := unmarshalTestJSON[T]{
 		test: name,
 		data: data,
 		comparer: func(observed optional.Value[T]) (optional.Value[T], bool) {
@@ -349,8 +349,8 @@ func unmarshalSupported[T any](name string, data string, value T) unmarshalTest[
 	return ti
 }
 
-func unmarshalUnsupportedValue[T any](name string, data string) unmarshalTest[T] {
-	ti := unmarshalTest[T]{
+func unmarshalUnsupportedValue[T any](name string, data string) unmarshalTestJSON[T] {
+	ti := unmarshalTestJSON[T]{
 		test: name,
 		data: data,
 	}
@@ -358,8 +358,8 @@ func unmarshalUnsupportedValue[T any](name string, data string) unmarshalTest[T]
 	return ti
 }
 
-func unmarshalUnsupportedType[T any](name string, data string) unmarshalTest[T] {
-	ti := unmarshalTest[T]{
+func unmarshalUnsupportedType[T any](name string, data string) unmarshalTestJSON[T] {
+	ti := unmarshalTestJSON[T]{
 		test: name,
 		data: data,
 	}
@@ -367,17 +367,17 @@ func unmarshalUnsupportedType[T any](name string, data string) unmarshalTest[T] 
 	return ti
 }
 
-func testUnmarshalJSON[T any](t *testing.T, tests ...unmarshalTest[T]) {
+func testUnmarshalJSON[T any](t *testing.T, tests ...unmarshalTestJSON[T]) {
 	t.Helper()
 
-	t.Run("Unset", marshalTest[T]{expected: "null"}.runSupported)
+	t.Run("Unset", marshalTestJSON[T]{expected: "null"}.runSupported)
 
 	for _, ti := range tests {
 		t.Run(ti.test, ti.run)
 	}
 }
 
-func TestUnmarshal(t *testing.T) {
+func TestUnmarshalJSON(t *testing.T) {
 	// Boolean
 	t.Run("Bool", func(t *testing.T) {
 		testUnmarshalJSON(t,
