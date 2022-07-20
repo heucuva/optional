@@ -6,7 +6,7 @@ Optional ("nullable") value library for Go
 
 ## Installation
 ```bash
-go get github.com/goccy/go-json
+go get github.com/heucuva/optional
 ```
 
 ## How to use
